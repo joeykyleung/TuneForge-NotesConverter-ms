@@ -1,4 +1,5 @@
 import math
+import logging
 
 from flask import Flask, request
 import midiutil
@@ -19,18 +20,18 @@ def create():
     midis = []
     for chord in chords:
         midis.append([get_midi_number(note) for note in chord])
-    print(midis)
+
     output_file = "output.mid"
     try:
         create_midi_file(midis, speed, output_file)
     except Exception as e:
-        print(e)
+        logging.error(e)
         return "Error", 500
     return "Success", 201
 
 
 def create_midi_file(chords, tempo, output_file):
-    print("Creating midi from chords:" + str(chords))
+    logging.info("Creating midi from chords:" + str(chords))
     # Create a MIDI file
     midi_file = midiutil.MIDIFile(1)
 
@@ -64,7 +65,9 @@ def create_midi_file(chords, tempo, output_file):
     with open(temp_file_name, 'wb') as file:
         midi_file.writeFile(file)
 
-    azureStorage.upload('temp_out.mid', output_file)
+    logging.info('Attempting to upload midi file to blob storage as '
+                 + output_file)
+    azureStorage.upload(temp_file_name, output_file)
     os.remove(temp_file_name)
 
 
