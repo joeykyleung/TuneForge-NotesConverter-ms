@@ -1,24 +1,36 @@
-from flask import Flask
+import math
+
+from flask import Flask, request
 import midiutil
 from storage import azureStorage
+import os
 
 app = Flask(__name__)
 
 
-@app.route('/')
-def create():  # put application's code here
-    chords = [[60, 64, 67], [62, 65, 69], [64, 67, 71], [65, 69, 72], [60]]
-    output_file = "input.mid"
-    # create_midi_file(chords, output_file)
-    return "Hello World!"
+def get_midi_number(frequency: float):
+    return round(12*math.log2(frequency/440) + 69)
 
-@app.route('/test')
-def test_storage():
-    azureStorage.upload("requirements.txt", "req.txt")
-    return "test!"
+@app.route('/', methods=['POST'])
+def create():  # put application's code here
+    data = request.get_json()
+    chords = data['notes']
+    speed = data['speed']
+    midis = []
+    for chord in chords:
+        midis.append([get_midi_number(note) for note in chord])
+    print(midis)
+    output_file = "output.mid"
+    try:
+        create_midi_file(midis, output_file)
+    except Exception as e:
+        print(e)
+        return "Error", 500
+    return "Success", 201
 
 
 def create_midi_file(chords, output_file):
+    print("Creating midi from chords:" + str(chords))
     # Create a MIDI file
     midi_file = midiutil.MIDIFile(1)
 
@@ -49,5 +61,11 @@ def create_midi_file(chords, output_file):
     #     time += 1
 
     # Save the MIDI file
-    with open(output_file, 'wb') as file:
+    temp_file_name = 'temp_out.mid'
+    with open(temp_file_name, 'wb') as file:
         midi_file.writeFile(file)
+
+    azureStorage.upload('temp_out.mid', output_file)
+    os.remove(temp_file_name)
+
+
