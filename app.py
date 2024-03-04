@@ -14,7 +14,7 @@ def create():  # put application's code here
 
 @app.route('/test')
 def test_storage():
-    azureStorage.upload()
+    azureStorage.upload("requirements.txt", "req.txt")
     return "test!"
 
 
