@@ -12,24 +12,24 @@ def get_midi_number(frequency: float):
     return round(12*math.log2(frequency/440) + 69)
 
 @app.route('/', methods=['POST'])
-def create():  # put application's code here
+def create():
     data = request.get_json()
     chords = data['notes']
-    speed = data['speed']
+    speed = int(data['speed'] * 120)
     midis = []
     for chord in chords:
         midis.append([get_midi_number(note) for note in chord])
     print(midis)
     output_file = "output.mid"
     try:
-        create_midi_file(midis, output_file)
+        create_midi_file(midis, speed, output_file)
     except Exception as e:
         print(e)
         return "Error", 500
     return "Success", 201
 
 
-def create_midi_file(chords, output_file):
+def create_midi_file(chords, tempo, output_file):
     print("Creating midi from chords:" + str(chords))
     # Create a MIDI file
     midi_file = midiutil.MIDIFile(1)
@@ -37,7 +37,6 @@ def create_midi_file(chords, output_file):
     # Set the tempo and track name
     track = 0
     channel = 0
-    tempo = 60
     track_name = "Music Notes"
 
     # Add track name and tempo to the MIDI file
