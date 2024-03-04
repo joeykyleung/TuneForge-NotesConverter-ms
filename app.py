@@ -7,10 +7,12 @@ from storage import azureStorage
 import os
 
 app = Flask(__name__)
+logging.basicConfig(level=logging.INFO)
 
 
 def get_midi_number(frequency: float):
     return round(12*math.log2(frequency/440) + 69)
+
 
 @app.route('/', methods=['POST'])
 def create():
@@ -25,13 +27,13 @@ def create():
     try:
         create_midi_file(midis, speed, output_file)
     except Exception as e:
-        logging.error(e)
+        app.logger.error(e)
         return "Error", 500
     return "Success", 201
 
 
 def create_midi_file(chords, tempo, output_file):
-    logging.info("Creating midi from chords:" + str(chords))
+    app.logger.info("Creating midi from chords:" + str(chords))
     # Create a MIDI file
     midi_file = midiutil.MIDIFile(1)
 
@@ -65,7 +67,7 @@ def create_midi_file(chords, tempo, output_file):
     with open(temp_file_name, 'wb') as file:
         midi_file.writeFile(file)
 
-    logging.info('Attempting to upload midi file to blob storage as '
+    app.logger.info('Attempting to upload midi file to blob storage as '
                  + output_file)
     azureStorage.upload(temp_file_name, output_file)
     os.remove(temp_file_name)
