@@ -1,5 +1,6 @@
 from flask import Flask
 import midiutil
+from storage import azureStorage
 
 app = Flask(__name__)
 
@@ -8,8 +9,13 @@ app = Flask(__name__)
 def create():  # put application's code here
     chords = [[60, 64, 67], [62, 65, 69], [64, 67, 71], [65, 69, 72], [60]]
     output_file = "input.mid"
-    create_midi_file(chords, output_file)
+    # create_midi_file(chords, output_file)
     return "Hello World!"
+
+@app.route('/test')
+def test_storage():
+    azureStorage.upload()
+    return "test!"
 
 
 def create_midi_file(chords, output_file):
