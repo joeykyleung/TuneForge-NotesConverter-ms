@@ -19,20 +19,21 @@ def create():
     data = request.get_json()
     chords = data['notes']
     speed = int(data['speed'] * 120)
+    instrument = int(data['instrument'])
     output_file = data['midi_filename']
     midis = []
     for chord in chords:
         midis.append([get_midi_number(note) for note in chord])
 
     try:
-        create_midi_file(midis, speed, output_file)
+        create_midi_file(midis, speed, instrument, output_file)
     except Exception as e:
         app.logger.error(e)
         return "Error", 500
     return output_file, 201
 
 
-def create_midi_file(chords, tempo, output_file):
+def create_midi_file(chords, tempo, instrument, output_file):
     app.logger.info("Creating midi from chords:" + str(chords))
     # Create a MIDI file
     midi_file = midiutil.MIDIFile(1)
@@ -50,9 +51,7 @@ def create_midi_file(chords, tempo, output_file):
     time = 0
     duration = 1
 
-    # Set the instrument
-    program = 1  # Change this to the desired instrument program number
-    midi_file.addProgramChange(track, channel, time, program)
+    midi_file.addProgramChange(track, channel, time, instrument)
 
     for chord in chords:
         for note in chord:
