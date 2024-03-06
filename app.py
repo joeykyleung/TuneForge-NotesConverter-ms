@@ -19,7 +19,7 @@ def create():
     data = request.get_json()
     chords = data['notes']
     speed = int(data['speed'] * 120)
-    instrument = int(data['instrument'])
+    instrument = int(data.get('instrument', 1))
     output_file = data['midi_filename']
     midis = []
     for chord in chords:
