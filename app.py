@@ -19,11 +19,11 @@ def create():
     data = request.get_json()
     chords = data['notes']
     speed = int(data['speed'] * 120)
+    output_file = data['midi_filename']
     midis = []
     for chord in chords:
         midis.append([get_midi_number(note) for note in chord])
 
-    output_file = "output.mid"
     try:
         create_midi_file(midis, speed, output_file)
     except Exception as e:
