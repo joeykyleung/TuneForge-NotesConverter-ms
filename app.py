@@ -29,7 +29,7 @@ def create():
     except Exception as e:
         app.logger.error(e)
         return "Error", 500
-    return "Success", 201
+    return output_file, 201
 
 
 def create_midi_file(chords, tempo, output_file):
