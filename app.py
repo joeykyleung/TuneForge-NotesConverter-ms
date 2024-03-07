@@ -11,11 +11,13 @@ logging.basicConfig(level=logging.INFO)
 
 
 def get_midi_number(frequency: float):
-    return round(12*math.log2(frequency/440) + 69)
+    return round(12 * math.log2(frequency / 440) + 69)
 
 
 @app.route('/', methods=['POST'])
 def create():
+    app.logger.info('Received request to create midi from notes: '
+                    + str(request.get_json()))
     data = request.get_json()
     chords = data['notes']
     speed = int(data['speed'] * 120)
@@ -29,7 +31,7 @@ def create():
         create_midi_file(midis, speed, instrument, output_file)
     except Exception as e:
         app.logger.error(e)
-        return "Error", 500
+        return "Error: experienced an error while creating midi file.", 500
     return output_file, 201
 
 
@@ -67,8 +69,6 @@ def create_midi_file(chords, tempo, instrument, output_file):
         midi_file.writeFile(file)
 
     app.logger.info('Attempting to upload midi file to blob storage as '
-                 + output_file)
+                    + output_file)
     azureStorage.upload(temp_file_name, output_file)
     os.remove(temp_file_name)
-
-
